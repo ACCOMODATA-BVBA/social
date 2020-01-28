@@ -3,7 +3,7 @@
 
     <template id="message_notification_email" inherit_id="mail.message_notification_email" priority="99">
         <xpath expr="//div/p[last()]" position="replace" >
-           
+
         </xpath>
     </template>
 
