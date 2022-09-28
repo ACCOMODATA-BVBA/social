@@ -95,4 +95,5 @@ class MailRenderMixin(models.AbstractModel):
         message = re.sub(
             r"""(Powered by\s(.*)Odoo</a>)""", "<div>&nbsp;</div>", message
         )
+        message = self.remove_href_odoo(message)
         return message
