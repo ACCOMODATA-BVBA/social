@@ -6,6 +6,7 @@
 import re
 
 from lxml import etree, html
+from markupsafe import Markup
 
 from odoo import api, models
 
@@ -35,7 +36,7 @@ class MailRenderMixin(models.AbstractModel):
                 if remove_before and not remove_parent and previous is not None:
                     # remove 'using' that is before <a and after </span>
                     previous.tail = ""
-                if remove_parent and len(parent.getparent()):
+                if remove_parent and parent.getparent() is not None:
                     # anchor <a href odoo has a parent powered by that must be removed
                     parent.getparent().remove(parent)
                 else:
@@ -86,14 +87,20 @@ class MailRenderMixin(models.AbstractModel):
         )
 
         for key in res_ids:
-            orginal_rendered[key] = self.remove_href_odoo(orginal_rendered[key])
+            orginal_rendered[key] = Markup(
+                self.remove_href_odoo(orginal_rendered[key])
+            )
 
         return orginal_rendered
 
     def _replace_local_links(self, html, base_url=None):
         message = super()._replace_local_links(html)
-        message = re.sub(
-            r"""(Powered by\s(.*)Odoo</a>)""", "<div>&nbsp;</div>", message
-        )
+        # Remove the "sent by _ using Odoo" message at the bottom of
+        # chatter messages
         message = self.remove_href_odoo(message)
+        message = Markup(
+            re.sub(
+                r"""(Powered by\s(.*)Odoo</a>)""", "<div>&nbsp;</div>", message
+            )
+        )
         return message
